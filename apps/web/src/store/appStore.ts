@@ -1067,6 +1067,7 @@ interface AppState {
 	specRequest: {
 		workspaceId: string;
 		path: string;
+		line?: number;
 		navigation: CenterNavigationStamp | null;
 	} | null;
 	specsByWorkspace: Record<string, SpecGraphNode[]>;
@@ -1437,7 +1438,7 @@ interface AppState {
 	clearChatLocation: () => void;
 	requestHistoryOpen: (target: HistoryTarget) => void;
 	clearHistoryOpen: () => void;
-	requestSpecView: (workspaceId: string, path: string) => void;
+	requestSpecView: (workspaceId: string, path: string, line?: number) => void;
 	clearSpecRequest: () => void;
 	setWorkspaceSpecs: (workspaceId: string, nodes: SpecGraphNode[]) => void;
 	setWorkspaceReview: (workspaceId: string, snapshot: ReviewSnapshot) => void;
@@ -4566,7 +4567,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 			};
 		}),
 	clearHistoryOpen: () => set({ historyOpenRequest: null }),
-	requestSpecView: (workspaceId, path) =>
+	requestSpecView: (workspaceId, path, line) =>
 		set((s) => {
 			if (s.removedWorkspaceIds[workspaceId]) return {};
 			const advanced = advanceCenterNavigation(s, workspaceId);
@@ -4576,7 +4577,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 					workspaceId,
 					tool: "specs",
 				}),
-				specRequest: { workspaceId, path, navigation: advanced.stamp },
+				specRequest: {
+					workspaceId,
+					path,
+					...(line === undefined ? {} : { line }),
+					navigation: advanced.stamp,
+				},
 				...advanced.patch,
 			};
 		}),
